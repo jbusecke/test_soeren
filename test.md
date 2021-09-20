@@ -1,7 +1,7 @@
 # Test Title
 
 
-## ANother line with a typo
+## Another line with a typo
 
 
 A statement that you disagree with.
