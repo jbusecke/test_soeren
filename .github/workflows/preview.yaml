@@ -4,7 +4,6 @@ on:
     workflows:
       - deploy-site
     types:
-      - requested
       - completed
 jobs:
   deploy:
