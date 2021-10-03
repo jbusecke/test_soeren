@@ -1,6 +1,5 @@
 name: preview-site
 on:
-  workflow_dispatch:
   workflow_run:
     workflows:
       - deploy-site
@@ -8,7 +7,6 @@ on:
       - completed
 jobs:
   deploy:
-    if: github.repository == 'jbusecke/test_soeren'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,7 +24,6 @@ jobs:
             let pullRequestNumber = ''
             let pullRequestHeadSHA = ''
             core.info('Finding pull request...')
-
             const pullRequests = await github.pulls.list({owner: context.repo.owner, repo: context.repo.repo})
             for (let pullRequest of pullRequests.data) {
               if(pullRequest.head.sha === context.payload.workflow_run.head_commit.id) {
@@ -45,7 +42,6 @@ jobs:
             else{
               core.info(`Found pull request ${pullRequestNumber}, with head sha: ${pullRequestHeadSHA}`)
             }
-
       - name: Find Comment
         uses: peter-evans/find-comment@v1
         if: steps.find-pull-request.outputs.number != ''
@@ -54,7 +50,6 @@ jobs:
           issue-number: '${{ steps.find-pull-request.outputs.number }}'
           comment-author: 'github-actions[bot]'
           body-includes: '${{ env.comment_message }}'
-
       - name: Create comment
         if: |
           github.event.workflow_run.conclusion != 'success'
@@ -65,8 +60,8 @@ jobs:
           issue-number: ${{ steps.find-pull-request.outputs.number }}
           body: |
             ${{ env.comment_message }}
-            🚧 Deployment in progress for git commit SHA: ${{ steps.find-pull-request.outputs.sha }}
 
+            🚧 Deployment in progress for git commit SHA: ${{ steps.find-pull-request.outputs.sha }}
       - name: Update comment
         if: |
           github.event.workflow_run.conclusion != 'success'
@@ -78,28 +73,38 @@ jobs:
           edit-mode: replace
           body: |
             ${{ env.comment_message }}
-            🚧 Deployment in progress for git commit SHA: ${{ steps.find-pull-request.outputs.sha }}
 
+            🚧 Deployment in progress for git commit SHA: ${{ steps.find-pull-request.outputs.sha }}
       - name: Download Artifact site
+        if: |
+          github.event.workflow_run.conclusion == 'success'
+          && steps.find-pull-request.outputs.number != ''
+          && steps.fc.outputs.comment-id != ''
         uses: dawidd6/action-download-artifact@v2.14.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: deploy.yaml
           run_id: ${{ github.event.workflow_run.id }}
           name: site-zip
-
       - name: Unzip site
+        if:  |
+          github.event.workflow_run.conclusion == 'success'
+          && steps.find-pull-request.outputs.number != ''
+          && steps.fc.outputs.comment-id != ''
         run: |
-          rm -rf ./_build/html
+          rm -rf ./portal/_build/html
           unzip site.zip
           rm -f site.zip
-
       # Push the site's HTML to Netlify and get the preview URL
       - name: Deploy to Netlify
+        if: |
+          github.event.workflow_run.conclusion == 'success'
+          && steps.find-pull-request.outputs.number != ''
+          && steps.fc.outputs.comment-id != ''
         id: netlify
         uses: nwtgck/actions-netlify@v1.2
         with:
-          publish-dir: ./_build/html
+          publish-dir: ._build/html
           production-deploy: false
           github-token: ${{ secrets.GITHUB_TOKEN }}
           enable-commit-comment: false
@@ -107,7 +112,6 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 5
-
       - name: Update site Preview comment
         if: |
           github.event.workflow_run.conclusion == 'success'
