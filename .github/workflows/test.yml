@@ -1,0 +1,10 @@
+name: test-simple
+on: 
+  workflow_run:
+    workflows:
+      - deploy-site
+    types:
+      - completed
+jobs:
+  run: |
+    echo "here"
