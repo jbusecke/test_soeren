@@ -2,6 +2,7 @@ name: deploy-site
 
 # Only run this when the master branch changes
 on:
+  push:
   pull_request:
   workflow_dispatch:
 jobs:
