@@ -83,7 +83,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2.14.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: ci.yaml
+          workflow: deploy.yaml
           run_id: ${{ github.event.workflow_run.id }}
           name: site-zip
       - name: Unzip site
