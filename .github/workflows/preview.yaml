@@ -109,6 +109,7 @@ jobs:
           production-deploy: false
           github-token: ${{ secrets.GITHUB_TOKEN }}
           enable-commit-comment: false
+          fails-without-credentials: true
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
